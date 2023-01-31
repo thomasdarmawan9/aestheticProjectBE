@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package models;
+
+option go_package = "./";
+
+message Customer {
+    int32 id = 1;
+    string name = 2;
+    string email = 3;
+    string alamat = 4;
+    int64  nohp   = 5;
+}
+
+message Session {
+    int32 id = 1;
+    string session = 2;
+}
+
+message ListCustomer {
+    repeated Customer list = 1;
+    repeated Session  Session = 2;
+}
