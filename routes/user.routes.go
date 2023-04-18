@@ -1,18 +1,19 @@
 package routes
 
 import (
+	"aesthetic/controllers"
+	"aesthetic/middleware"
+	"aesthetic/services"
+
 	"github.com/gin-gonic/gin"
-	"github.com/wpcodevo/golang-mongodb/controllers"
-	"github.com/wpcodevo/golang-mongodb/middleware"
-	"github.com/wpcodevo/golang-mongodb/services"
 )
 
 type UserRouteController struct {
-	userController controllers.UserController
+	userController *controllers.UserController
 }
 
-func NewRouteUserController(userController controllers.UserController) UserRouteController {
-	return UserRouteController{userController}
+func NewRouteUserController(userController *controllers.UserController) *UserRouteController {
+	return &UserRouteController{userController}
 }
 
 func (uc *UserRouteController) UserRoute(rg *gin.RouterGroup, userService services.UserService) {

@@ -1,9 +1,14 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrInvalidCredentials = errors.New("invalid credentials")
 )
 
 func HashPassword(password string) (string, error) {
@@ -17,4 +22,11 @@ func HashPassword(password string) (string, error) {
 
 func VerifyPassword(hashedPassword string, candidatePassword string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(candidatePassword))
+}
+
+func CheckPassword(password string, hashedPassword string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)); err != nil {
+		return ErrInvalidCredentials
+	}
+	return nil
 }

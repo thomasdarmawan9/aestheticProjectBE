@@ -6,20 +6,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wpcodevo/golang-mongodb/models"
-	"github.com/wpcodevo/golang-mongodb/utils"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"aesthetic/models"
+	"aesthetic/utils"
+
+	"gorm.io/gorm"
 )
 
 type AuthServiceImpl struct {
-	collection *mongo.Collection
-	ctx        context.Context
+	db  *gorm.DB
+	ctx context.Context
 }
 
-func NewAuthService(collection *mongo.Collection, ctx context.Context) AuthService {
-	return &AuthServiceImpl{collection, ctx}
+func NewAuthService(db *gorm.DB, ctx context.Context) AuthService {
+	return &AuthServiceImpl{db, ctx}
 }
 
 func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {
@@ -32,35 +31,61 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 
 	hashedPassword, _ := utils.HashPassword(user.Password)
 	user.Password = hashedPassword
-	res, err := uc.collection.InsertOne(uc.ctx, &user)
 
+	// Check if user with email already exists
+	var existingUser models.User
+	if err := uc.db.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
+		return nil, errors.New("user with that email already exists")
+	}
+
+	// Create user using raw SQL query
+	create := "INSERT INTO users (created_at, updated_at, name, email, phone_number, address, date_of_birth, preferences, password, verified, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	result := uc.db.Exec(create, user.CreatedAt, user.UpdatedAt, user.Name, user.Email, user.PhoneNumber, user.Address, user.DateOfBirth, user.Preferences, user.Password, user.Verified, user.Role)
+
+	if result.Error != nil {
+		return nil, errors.New("error creating data")
+	}
+
+	// Get Data User after create using raw SQL query
+	var newUser models.DBResponse
+	query := "SELECT * FROM users WHERE email = ?"
+	if err := uc.db.Raw(query, user.Email).Scan(&newUser).Error; err != nil {
+		return nil, errors.New("error querying the database")
+	}
+
+	return &newUser, nil
+}
+
+func (uc *AuthServiceImpl) SignInUser(input *models.SignInInput) (*models.DBResponse, error) {
+	var user models.User
+
+	// Find user by email
+	query := "SELECT * FROM users WHERE email = ?"
+	if err := uc.db.Raw(query, user.Email).Scan(&user).Error; err != nil {
+		return nil, errors.New("error querying the database")
+	}
+
+	// Compare password
+	passwordMatch := utils.CheckPassword(input.Password, user.Password)
+	if passwordMatch != nil {
+		return nil, errors.New("incorrect password")
+	}
+
+	// Create JWT token
+	token, err := utils.GenerateToken(user.UserID)
 	if err != nil {
-		if er, ok := err.(mongo.WriteException); ok && er.WriteErrors[0].Code == 11000 {
-			return nil, errors.New("user with that email already exist")
-		}
 		return nil, err
 	}
 
-	// Create a unique index for the email field
-	opt := options.Index()
-	opt.SetUnique(true)
-	index := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
-
-	if _, err := uc.collection.Indexes().CreateOne(uc.ctx, index); err != nil {
-		return nil, errors.New("could not create index for email")
+	// Create DBResponse
+	dbResponse := &models.DBResponse{
+		UserID: user.UserID,
+		Token: token,
 	}
 
-	var newUser *models.DBResponse
-	query := bson.M{"_id": res.InsertedID}
-
-	err = uc.collection.FindOne(uc.ctx, query).Decode(&newUser)
-	if err != nil {
-		return nil, err
-	}
-
-	return newUser, nil
+	return dbResponse, nil
 }
 
-func (uc *AuthServiceImpl) SignInUser(*models.SignInInput) (*models.DBResponse, error) {
-	return nil, nil
-}
+// func (uc *AuthServiceImpl) SignInUser(*models.SignInInput) (*models.DBResponse, error) {
+// 	return nil, nil
+// }

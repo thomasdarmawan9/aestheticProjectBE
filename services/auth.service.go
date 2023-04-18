@@ -1,6 +1,6 @@
 package services
 
-import "github.com/wpcodevo/golang-mongodb/models"
+import "aesthetic/models"
 
 type AuthService interface {
 	SignUpUser(*models.SignUpInput) (*models.DBResponse, error)

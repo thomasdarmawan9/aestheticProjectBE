@@ -3,83 +3,96 @@ package models
 import (
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"gorm.io/gorm"
 )
 
-// 👈 SignUpInput struct
-type SignUpInput struct {
-	Name               string    `json:"name" bson:"name" binding:"required"`
-	Email              string    `json:"email" bson:"email" binding:"required"`
-	Password           string    `json:"password" bson:"password" binding:"required,min=8"`
-	PasswordConfirm    string    `json:"passwordConfirm" bson:"passwordConfirm,omitempty" binding:"required"`
-	Role               string    `json:"role" bson:"role"`
-	VerificationCode   string    `json:"verificationCode,omitempty" bson:"verificationCode,omitempty"`
-	ResetPasswordToken string    `json:"resetPasswordToken,omitempty" bson:"resetPasswordToken,omitempty"`
-	ResetPasswordAt    time.Time `json:"resetPasswordAt,omitempty" bson:"resetPasswordAt,omitempty"`
-	Verified           bool      `json:"verified" bson:"verified"`
-	CreatedAt          time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at" bson:"updated_at"`
+// 👈 User struct
+type User struct {
+	UserID       						uint   `gorm:"primaryKey" json:"user_id"`
+	Role      							string    `json:"role,omitempty"`
+	Name     								string `gorm:"not null" json:"full_name"`
+	Email        						string `gorm:"unique;not null" json:"email"`
+	Password 								string `gorm:"not null" json:"password" binding:"required"`
+	PhoneNumber 						string `gorm:"not null" json:"phone_number"`
+	Preferences  						string `json:"preferences"`
+	Address      						string `gorm:"not null" json:"address"`
+	DateOfBirth  						string `gorm:"not null" json:"date_of_birth"`
+	VerificationCode   			string    `json:"verificationCode,omitempty"`
+	ResetPasswordToken 			string    `json:"resetPasswordToken,omitempty"`
+	ResetPasswordAt    			time.Time `json:"resetPasswordAt,omitempty"`
+	Verified           			bool      `json:"verified"`
+	CreatedAt    						time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt    						time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // 👈 SignInInput struct
 type SignInInput struct {
-	Email    string `json:"email" bson:"email" binding:"required"`
-	Password string `json:"password" bson:"password" binding:"required"`
+	gorm.Model
+	Email    string `gorm:"uniqueIndex;not null" json:"email" binding:"required"`
+	Password string `gorm:"not null" json:"password" binding:"required"`
+}
+
+// 👈 SignUpInput struct
+type SignUpInput struct {
+	ID                 uint      `gorm:"primaryKey;autoIncrement"`
+	Name               string    `json:"name" gorm:"not null"`
+	Email              string    `json:"email" gorm:"not null;unique"`
+	Password           string    `json:"password" gorm:"not null"`
+	PasswordConfirm    string    `json:"passwordConfirm" gorm:"-"`
+	Role               string    `json:"role" gorm:"default:user"`
+	PhoneNumber 			 string `gorm:"not null" json:"phone_number"`
+	Address      			 string `gorm:"not null" json:"address"`
+	DateOfBirth  			 string `gorm:"not null" json:"date_of_birth"`
+	Preferences  			 string ` json:"preferences"`
+	VerificationCode   string    `json:"verificationCode,omitempty" gorm:"-"`
+	ResetPasswordToken string    `json:"resetPasswordToken,omitempty" gorm:"-"`
+	ResetPasswordAt    time.Time `json:"resetPasswordAt,omitempty" gorm:"-"`
+	Verified           bool      `json:"verified" gorm:"default:false"`
+	CreatedAt          time.Time `json:"created_at" gorm:"not null"`
+	UpdatedAt          time.Time `json:"updated_at" gorm:"not null"`
+}
+
+func (SignUpInput) UsersTable() string {
+	return "users"
 }
 
 // 👈 DBResponse struct
 type DBResponse struct {
-	ID                 primitive.ObjectID `json:"id" bson:"_id"`
-	Name               string             `json:"name" bson:"name"`
-	Email              string             `json:"email" bson:"email"`
-	Password           string             `json:"password" bson:"password"`
-	PasswordConfirm    string             `json:"passwordConfirm,omitempty" bson:"passwordConfirm,omitempty"`
-	Role               string             `json:"role" bson:"role"`
-	VerificationCode   string             `json:"verificationCode,omitempty" bson:"verificationCode"`
-	ResetPasswordToken string             `json:"resetPasswordToken,omitempty" bson:"resetPasswordToken,omitempty"`
-	ResetPasswordAt    time.Time          `json:"resetPasswordAt,omitempty" bson:"resetPasswordAt,omitempty"`
-	Verified           bool               `json:"verified" bson:"verified"`
-	CreatedAt          time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt          time.Time          `json:"updated_at" bson:"updated_at"`
+	UserID       			 uint   						`gorm:"primaryKey" json:"user_id"`
+	Token               string             `json:"token"`
+	Name               string             `json:"name"`
+	Email              string             `json:"email"`
+	Password           string             `json:"password"`
+	PasswordConfirm    string             `json:"passwordConfirm,omitempty"`
+	Role               string             `json:"role"`
+	VerificationCode   string             `json:"verificationCode,omitempty"`
+	ResetPasswordToken string             `json:"resetPasswordToken,omitempty"`
+	ResetPasswordAt    time.Time          `json:"resetPasswordAt,omitempty"`
+	Verified           bool               `json:"verified"`
+	CreatedAt          time.Time          `json:"created_at"`
+	UpdatedAt          time.Time          `json:"updated_at"`
 }
 
-type UpdateInput struct {
-	Name               string    `json:"name,omitempty" bson:"name,omitempty"`
-	Email              string    `json:"email,omitempty" bson:"email,omitempty"`
-	Password           string    `json:"password,omitempty" bson:"password,omitempty"`
-	Role               string    `json:"role,omitempty" bson:"role,omitempty"`
-	VerificationCode   string    `json:"verificationCode,omitempty" bson:"verificationCode,omitempty"`
-	ResetPasswordToken string    `json:"resetPasswordToken,omitempty" bson:"resetPasswordToken,omitempty"`
-	ResetPasswordAt    time.Time `json:"resetPasswordAt,omitempty" bson:"resetPasswordAt,omitempty"`
-	Verified           bool      `json:"verified,omitempty" bson:"verified,omitempty"`
-	CreatedAt          time.Time `json:"created_at,omitempty" bson:"created_at,omitempty"`
-	UpdatedAt          time.Time `json:"updated_at,omitempty" bson:"updated_at,omitempty"`
+// 👈 ForgotPasswordToken struct
+type ForgotPasswordToken struct {
+	gorm.Model
+	Token  string `json:"token" gorm:"uniqueIndex;not null"`
+	UserID uint   `json:"userId" gorm:"not null"`
 }
 
 // 👈 UserResponse struct
 type UserResponse struct {
-	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Name      string             `json:"name,omitempty" bson:"name,omitempty"`
-	Email     string             `json:"email,omitempty" bson:"email,omitempty"`
-	Role      string             `json:"role,omitempty" bson:"role,omitempty"`
-	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
-}
-
-// 👈 ForgotPasswordInput struct
-type ForgotPasswordInput struct {
-	Email string `json:"email" bson:"email" binding:"required"`
-}
-
-// 👈 ResetPasswordInput struct
-type ResetPasswordInput struct {
-	Password        string `json:"password" bson:"password"`
-	PasswordConfirm string `json:"passwordConfirm,omitempty" bson:"passwordConfirm,omitempty"`
+	ID        uint      `json:"id,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Email     string    `json:"email,omitempty"`
+	Role      string    `json:"role,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 func FilteredResponse(user *DBResponse) UserResponse {
 	return UserResponse{
-		ID:        user.ID,
+		ID:        user.UserID,
 		Email:     user.Email,
 		Name:      user.Name,
 		Role:      user.Role,
@@ -87,3 +100,11 @@ func FilteredResponse(user *DBResponse) UserResponse {
 		UpdatedAt: user.UpdatedAt,
 	}
 }
+
+// 👈 PasswordReset struct
+type PasswordReset struct {
+	gorm.Model
+	UserID uint   `json:"userId" gorm:"not null"`
+	Token  string `json:"token" gorm:"uniqueIndex;not null"`
+}
+

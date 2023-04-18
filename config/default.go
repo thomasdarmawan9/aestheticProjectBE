@@ -7,6 +7,13 @@ import (
 )
 
 type Config struct {
+
+	PostgresHost  			 string `mapstructure:"POSTGRES_HOST"`
+	PostgresUser				 string `mapstructure:"POSTGRES_USER"`
+	PostgresPassword		 string `mapstructure:"POSTGRES_PASSWORD"`
+	PostgresDB				 	 string `mapstructure:"POSTGRES_DB"`
+	PostgresPort				 string `mapstructure:"POSTGRES_PORT"`
+
 	DBUri    string `mapstructure:"MONGODB_LOCAL_URI"`
 	RedisUri string `mapstructure:"REDIS_URL"`
 	Port     string `mapstructure:"PORT"`
