@@ -1,18 +1,21 @@
 package models
 
 import (
-	"time"
+	"gorm.io/gorm"
 )
 
 type PaymentMethodGroup struct {
-	NameGroup							 string									`json:"nameGroup" bson:"nameGroup" binding:"required"`
-	CreateAt  						 time.Time 							`json:"createdAt,omitempty" bson:"createdAt,omitempty"`
-	UpdatedAt 						 time.Time 							`json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
+	gorm.Model
+	Id uint `gorm:"primaryKey" json:"id"`
+	NameGroup     string            `json:"nameGroup"`
+	PaymentMethodItems []PaymentMethodItem `gorm:"foreignKey:PaymentMethodGroupID"`
 }
 
 type PaymentMethodItem struct {
-	NameItem  							string    							`json:"nameItem" bson:"nameItem" binding:"required"`
-	CreateAt  						 	time.Time 							`json:"createdAt,omitempty" bson:"createdAt,omitempty"`
-	UpdatedAt 						 	time.Time 							`json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
+	gorm.Model
+	Id uint `gorm:"primaryKey" json:"id"`
+	NameItem       string          `json:"nameItem"`
+	PaymentMethodGroupID uint   `json:"-"`
 }
+
 

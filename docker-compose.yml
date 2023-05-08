@@ -22,12 +22,18 @@ services:
 
   goapp:
     build:
-      context: ./ # Adjust the context to point to the root directory
-      dockerfile: ./cmd/server/Dockerfile # Adjust the path to the Dockerfile
+      context: .
+      dockerfile: ./cmd/server/Dockerfile
     ports:
       - "8080:8000"
     environment:
       - REDIS_ADDR=redis:6379
+      - GOPATH=/go
+      - GO111MODULE=on
+      - CGO_ENABLED=0
+    volumes:
+      - .:/go/src/aestheticProjectBE
+    command: go run cmd/server/main.go
     depends_on:
       - postgres
 

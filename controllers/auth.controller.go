@@ -92,8 +92,8 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 			return
 	}
 
-	log.Println(credentials.Password)
-	log.Println(user.Password)
+	// log.Println(credentials.Password)
+	// log.Println(user.Password)
 
 	if err := utils.VerifyPassword(user.Password, credentials.Password); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})

@@ -29,6 +29,9 @@ var (
 	authService         services.AuthService
 	authController      *controllers.AuthController
 	authRouteController *routes.AuthRouteController
+	itemService         services.ItemService
+	itemController      *controllers.ItemController
+	itemRouteController *routes.ItemRouteController
 )
 
 func init() {
@@ -65,7 +68,7 @@ func init() {
 	fmt.Println("Redis client connected successfully...")
 
 	// Migrate the models
-	err = db.AutoMigrate(&models.User{})
+	err = db.Debug().AutoMigrate(&models.User{}, &models.Item{}, &models.Transaction{}, &models.PaymentMethodGroup{}, &models.PaymentMethodItem{})
 	if err != nil {
 		fmt.Println("Error migrating User model")
 		panic(err)
