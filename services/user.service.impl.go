@@ -21,7 +21,7 @@ func (us *UserServiceImpl) FindUserById(id string) (*models.DBResponse, error) {
 	// var user *models.DBResponse
 	user := &models.DBResponse{}
 		// Find user by id
-		query := "SELECT * FROM users WHERE user_id = ?"
+		query := "SELECT * FROM tb_customers WHERE user_id = ?"
 		if err := us.db.Raw(query, id).Scan(user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &models.DBResponse{}, err
@@ -35,7 +35,7 @@ func (us *UserServiceImpl) FindUserByEmail(email string) (*models.DBResponse, er
 	// var user *models.DBResponse
 	user := &models.DBResponse{}
 		// Find user by email
-		query := "SELECT * FROM users WHERE email = ?"
+		query := "SELECT * FROM tb_customers WHERE email = ?"
 			if err := us.db.Raw(query, email).Scan(user).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return &models.DBResponse{}, err

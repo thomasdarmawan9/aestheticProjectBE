@@ -68,7 +68,7 @@ func init() {
 	fmt.Println("Redis client connected successfully...")
 
 	// Migrate the models
-	err = db.Debug().AutoMigrate(&models.User{}, &models.Item{}, &models.Transaction{}, &models.PaymentMethodGroup{}, &models.PaymentMethodItem{})
+	err = db.Debug().AutoMigrate(&models.Tb_Customers{}, &models.Item{}, &models.Transaction{}, &models.PaymentMethodGroup{}, &models.PaymentMethodItem{})
 	if err != nil {
 		fmt.Println("Error migrating User model")
 		panic(err)
@@ -77,15 +77,17 @@ func init() {
 	// Initialize the services
 	userService = services.NewUserService(db)
 	authService = services.NewAuthService(db, ctx)
+	itemService = services.NewItemService(db)
 
 	// Initialize the controllers
 	authController = controllers.NewAuthController(authService, userService)
 	userController = controllers.NewUserController(userService)
+	itemController = controllers.NewItemController(itemService)
 
 	// Initialize the routes
 	authRouteController = routes.NewAuthRouteController(authController)
 	userRouteController = routes.NewRouteUserController(userController)
-
+	itemRouteController = routes.NewItemRouteController(itemController)
 
 	fmt.Println("PostgreSQL successfully connected...")
 }
@@ -116,6 +118,7 @@ func startGinServer(config config.Config) {
 
 	authRouteController.AuthRoute(router, userService)
 	userRouteController.UserRoute(router, userService)
+	itemRouteController.ItemRoute(router, itemService, userService)
 
 	fmt.Println("routes running")
 

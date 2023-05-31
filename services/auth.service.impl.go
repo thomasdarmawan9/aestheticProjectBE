@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -21,34 +23,42 @@ func NewAuthService(db *gorm.DB, ctx context.Context) AuthService {
 	return &AuthServiceImpl{db, ctx}
 }
 
-func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {
+func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.SignUpInput, error) {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = user.CreatedAt
 	user.Email = strings.ToLower(user.Email)
-	user.PasswordConfirm = ""
 	user.Verified = false
-	user.Role = "user"
+
+	// Check if password and password confirmation match
+	if user.Password != user.PasswordConfirm {
+		return nil, errors.New("password and password confirmation do not match")
+	}
 
 	hashedPassword, _ := utils.HashPassword(user.Password)
 	user.Password = hashedPassword
 
 	// Check if user with email already exists
-	var existingUser models.User
+	var existingUser models.Tb_Customers
 	if err := uc.db.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
 		return nil, errors.New("user with that email already exists")
 	}
 
+	// Generate customer serial
+	user.CustomerSerial = generateCustomerSerial()
+
 	// Create user using raw SQL query
-	create := "INSERT INTO users (created_at, updated_at, name, email, phone_number, address, date_of_birth, preferences, password, verified, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	result := uc.db.Exec(create, user.CreatedAt, user.UpdatedAt, user.Name, user.Email, user.PhoneNumber, user.Address, user.DateOfBirth, user.Preferences, user.Password, user.Verified, user.Role)
+	create := "INSERT INTO tb_customers (created_at, updated_at, customer_serial, name, email, phone_number, address, date_of_birth, password, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	result := uc.db.Exec(create, user.CreatedAt, user.UpdatedAt, user.CustomerSerial, user.Name, user.Email, user.PhoneNumber, user.Address, user.DateOfBirth, user.Password, user.Verified)
 
 	if result.Error != nil {
 		return nil, errors.New("error creating data")
 	}
 
 	// Get Data User after create using raw SQL query
-	var newUser models.DBResponse
-	query := "SELECT * FROM users WHERE email = ?"
+	var newUser models.SignUpInput
+	hashedPassConfirm, _ := utils.HashPassword(user.PasswordConfirm)
+	newUser.PasswordConfirm = hashedPassConfirm
+	query := "SELECT * FROM tb_customers WHERE email = ?"
 	if err := uc.db.Raw(query, user.Email).Scan(&newUser).Error; err != nil {
 		return nil, errors.New("error querying the database")
 	}
@@ -56,11 +66,25 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 	return &newUser, nil
 }
 
+
+// generateCustomerSerial generates a unique customer serial
+func generateCustomerSerial() string {
+	// You can implement your own logic to generate the customer serial here
+	// For example, you can use a combination of current timestamp and a random number
+
+	// Here's a simple example using a timestamp and a random number:
+	timestamp := time.Now().Unix()
+	randomNumber := rand.Intn(10000) // Change the range as needed
+	customerSerial := fmt.Sprintf("%d-%d", timestamp, randomNumber)
+
+	return customerSerial
+}
+
 func (uc *AuthServiceImpl) SignInUser(input *models.SignInInput) (*models.DBResponse, error) {
-	var user models.User
+	var user models.Tb_Customers
 
 	// Find user by email
-	query := "SELECT * FROM users WHERE email = ?"
+	query := "SELECT * FROM tb_customers WHERE email = ?"
 	if err := uc.db.Raw(query, user.Email).Scan(&user).Error; err != nil {
 		return nil, errors.New("error querying the database")
 	}

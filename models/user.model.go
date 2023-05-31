@@ -7,16 +7,16 @@ import (
 )
 
 // 👈 User struct
-type User struct {
-	UserID       						uint   `gorm:"primaryKey" json:"user_id"`
-	Role      							string    `json:"role,omitempty"`
-	Name     								string `gorm:"not null" json:"full_name"`
-	Email        						string `gorm:"unique;not null" json:"email"`
-	Password 								string `gorm:"not null" json:"password" binding:"required"`
-	PhoneNumber 						string `gorm:"not null" json:"phone_number"`
-	Preferences  						string `json:"preferences"`
-	Address      						string `gorm:"not null" json:"address"`
-	DateOfBirth  						string `gorm:"not null" json:"date_of_birth"`
+type Tb_Customers struct {
+	UserID       						uint   		`gorm:"primaryKey" json:"userId"`
+	CustomerSerial      		string 		`gorm:"unique;not null" json:"customerSerial,omitempty"`
+	Name     								string 		`gorm:"not null" json:"fullName"`
+	Email        						string 		`gorm:"unique;not null" json:"email"`
+	Password 								string 		`gorm:"not null" json:"password" binding:"required"`
+	PhoneNumber 						string 		`gorm:"null" json:"phoneNumber"`
+	Address      						string 		`gorm:"null" json:"address"`
+	Age      								string 		`gorm:"null" json:"age"`
+	DateOfBirth  						string 		`gorm:"null" json:"dateOfBirth"`
 	VerificationCode   			string    `json:"verificationCode,omitempty"`
 	ResetPasswordToken 			string    `json:"resetPasswordToken,omitempty"`
 	ResetPasswordAt    			time.Time `json:"resetPasswordAt,omitempty"`
@@ -34,43 +34,44 @@ type SignInInput struct {
 
 // 👈 SignUpInput struct
 type SignUpInput struct {
-	ID                 uint      `gorm:"primaryKey;autoIncrement"`
-	Name               string    `json:"name" gorm:"not null"`
-	Email              string    `json:"email" gorm:"not null;unique"`
-	Password           string    `json:"password" gorm:"not null"`
-	PasswordConfirm    string    `json:"passwordConfirm" gorm:"-"`
-	Role               string    `json:"role" gorm:"default:user"`
-	PhoneNumber 			 string `gorm:"not null" json:"phone_number"`
-	Address      			 string `gorm:"not null" json:"address"`
-	DateOfBirth  			 string `gorm:"not null" json:"date_of_birth"`
-	Preferences  			 string ` json:"preferences"`
-	VerificationCode   string    `json:"verificationCode,omitempty" gorm:"-"`
-	ResetPasswordToken string    `json:"resetPasswordToken,omitempty" gorm:"-"`
-	ResetPasswordAt    time.Time `json:"resetPasswordAt,omitempty" gorm:"-"`
-	Verified           bool      `json:"verified" gorm:"default:false"`
-	CreatedAt          time.Time `json:"created_at" gorm:"not null"`
-	UpdatedAt          time.Time `json:"updated_at" gorm:"not null"`
+	UserID       						uint   		`gorm:"primaryKey" json:"userId"`
+	CustomerSerial      		string 		`gorm:"unique;not null" json:"customerSerial,omitempty"`
+	Name     								string 		`gorm:"not null" json:"fullName"`
+	Email        						string 		`gorm:"unique;not null" json:"email"`
+	Password 								string 		`gorm:"not null" json:"password" binding:"required"`
+	PasswordConfirm    			string    `json:"passwordConfirm" gorm:"-"`
+	PhoneNumber 						string 		`gorm:"null" json:"phoneNumber"`
+	Address      						string 		`gorm:"null" json:"address"`
+	Age      								string 		`gorm:"null" json:"age"`
+	DateOfBirth  						string 		`gorm:"null" json:"dateOfBirth"`
+	VerificationCode   			string    `json:"verificationCode,omitempty"`
+	ResetPasswordToken 			string    `json:"resetPasswordToken,omitempty"`
+	ResetPasswordAt    			time.Time `json:"resetPasswordAt,omitempty"`
+	Verified           			bool      `json:"verified"`
+	CreatedAt          			time.Time `json:"created_at" gorm:"not null"`
+	UpdatedAt          			time.Time `json:"updated_at" gorm:"not null"`
 }
 
 func (SignUpInput) UsersTable() string {
-	return "users"
+	return "tb_customers"
 }
 
 // 👈 DBResponse struct
 type DBResponse struct {
-	UserID       			 uint   						`gorm:"primaryKey" json:"user_id"`
-	Token               string             `json:"token"`
-	Name               string             `json:"name"`
-	Email              string             `json:"email"`
-	Password           string             `json:"password"`
-	PasswordConfirm    string             `json:"passwordConfirm,omitempty"`
-	Role               string             `json:"role"`
-	VerificationCode   string             `json:"verificationCode,omitempty"`
-	ResetPasswordToken string             `json:"resetPasswordToken,omitempty"`
-	ResetPasswordAt    time.Time          `json:"resetPasswordAt,omitempty"`
-	Verified           bool               `json:"verified"`
-	CreatedAt          time.Time          `json:"created_at"`
-	UpdatedAt          time.Time          `json:"updated_at"`
+	UserID       						uint   		`gorm:"primaryKey" json:"userId"`
+	Token               		string     `json:"token"`
+	CustomerSerial      		string 		`gorm:"unique;not null" json:"customerSerial,omitempty"`
+	Name     								string 		`gorm:"not null" json:"fullName"`
+	Email        						string 		`gorm:"unique;not null" json:"email"`
+	Password 								string 		`gorm:"not null" json:"password" binding:"required"`
+	PhoneNumber 						string 		`gorm:"null" json:"phoneNumber"`
+	Address      						string 		`gorm:"null" json:"address"`
+	Age      								string 		`gorm:"null" json:"age"`
+	DateOfBirth  						string 		`gorm:"null" json:"dateOfBirth"`
+	VerificationCode   			string    `json:"verificationCode,omitempty"`
+	ResetPasswordToken 			string    `json:"resetPasswordToken,omitempty"`
+	ResetPasswordAt    			time.Time `json:"resetPasswordAt,omitempty"`
+	Verified           			bool      `json:"verified"`
 }
 
 // 👈 ForgotPasswordToken struct
@@ -95,9 +96,6 @@ func FilteredResponse(user *DBResponse) UserResponse {
 		ID:        user.UserID,
 		Email:     user.Email,
 		Name:      user.Name,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
 	}
 }
 

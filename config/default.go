@@ -14,7 +14,7 @@ type Config struct {
 	PostgresDB				 	 string `mapstructure:"POSTGRES_DB"`
 	PostgresPort				 string `mapstructure:"POSTGRES_PORT"`
 
-	DBUri    string `mapstructure:"MONGODB_LOCAL_URI"`
+	// DBUri    string `mapstructure:"MONGODB_LOCAL_URI"`
 	RedisUri string `mapstructure:"REDIS_URL"`
 	Port     string `mapstructure:"PORT"`
 

@@ -1,10 +1,13 @@
+After Installing redis -> use this command in terminal "redis-server"
+
 Docker volume create :
+
 > docker volume create pgaesthetic
-Docker create network :
+> Docker create network :
 > docker network create database-net
-Docker psql run :
+> Docker psql run :
 > docker exec -it 37b797098943 psql -U postgres
-Check Database by command :
+> Check Database by command :
 > \l
 
 config sementara postgresql
